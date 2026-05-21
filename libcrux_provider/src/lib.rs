@@ -83,8 +83,9 @@ impl HpkeCrypto for HpkeLibcrux {
         alg: KemAlgorithm,
         prng: &mut Self::HpkePrng,
     ) -> Result<(Vec<u8>, Vec<u8>), Error> {
+        #[allow(deprecated)]
         match alg {
-            KemAlgorithm::XWingDraft06 => {
+            KemAlgorithm::XWingDraft06 | KemAlgorithm::XWingDraft06Obsolete => {
                 libcrux_kem::key_gen(libcrux_kem::Algorithm::XWingKemDraft06, prng)
                     .map(|(sk, pk)| (pk.encode(), sk.encode()))
                     .map_err(|e| Error::CryptoLibraryError(format!("KEM key gen error: {:?}", e)))
@@ -248,10 +249,12 @@ impl HpkeCrypto for HpkeLibcrux {
 
     /// Returns an error if the KEM algorithm is not supported by this crypto provider.
     fn supports_kem(alg: KemAlgorithm) -> Result<(), Error> {
+        #[allow(deprecated)]
         match alg {
-            KemAlgorithm::DhKem25519 | KemAlgorithm::DhKemP256 | KemAlgorithm::XWingDraft06 => {
-                Ok(())
-            }
+            KemAlgorithm::DhKem25519
+            | KemAlgorithm::DhKemP256
+            | KemAlgorithm::XWingDraft06
+            | KemAlgorithm::XWingDraft06Obsolete => Ok(()),
             _ => Err(Error::UnknownKemAlgorithm),
         }
     }
@@ -299,10 +302,13 @@ fn kdf_algorithm_to_libcrux_hkdf_algorithm(alg: KdfAlgorithm) -> libcrux_hkdf::A
 
 #[inline(always)]
 fn kem_key_type_to_libcrux_alg(alg: KemAlgorithm) -> Result<libcrux_kem::Algorithm, Error> {
+    #[allow(deprecated)]
     match alg {
         KemAlgorithm::DhKem25519 => Ok(libcrux_kem::Algorithm::X25519),
         KemAlgorithm::DhKemP256 => Ok(libcrux_kem::Algorithm::Secp256r1),
-        KemAlgorithm::XWingDraft06 => Ok(libcrux_kem::Algorithm::XWingKemDraft06),
+        KemAlgorithm::XWingDraft06 | KemAlgorithm::XWingDraft06Obsolete => {
+            Ok(libcrux_kem::Algorithm::XWingKemDraft06)
+        }
         _ => Err(Error::UnknownKemAlgorithm),
     }
 }
