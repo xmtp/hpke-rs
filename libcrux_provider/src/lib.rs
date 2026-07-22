@@ -12,7 +12,7 @@ use hpke_rs_crypto::{
     CryptoRng, HpkeCrypto, HpkeTestRng,
 };
 
-use rand::{rngs::SysRng, Rng, SeedableRng};
+use rand::{rngs::SysRng, Rng, SeedableRng, TryCryptoRng, TryRng};
 use rand_core::UnwrapErr;
 
 /// The Libcrux HPKE Provider
@@ -348,6 +348,28 @@ impl hpke_rs_crypto::RngCore for HpkeLibcruxPrng {
 
 impl CryptoRng for HpkeLibcruxPrng {}
 
+// libcrux 0.0.9's KEM API takes `&mut impl rand::CryptoRng`, satisfied via the
+// `TryRng`/`TryCryptoRng` blanket impls; the `hpke_rs_crypto::RngCore` impls
+// above stay for the hpke-rs 0.6 trait bounds. Mirrors upstream hpke-rs 0.7.0.
+impl TryCryptoRng for HpkeLibcruxPrng {}
+
+impl TryRng for HpkeLibcruxPrng {
+    type Error = core::convert::Infallible;
+
+    fn try_next_u32(&mut self) -> Result<u32, Self::Error> {
+        Ok(self.rng.next_u32())
+    }
+
+    fn try_next_u64(&mut self) -> Result<u64, Self::Error> {
+        Ok(self.rng.next_u64())
+    }
+
+    fn try_fill_bytes(&mut self, dst: &mut [u8]) -> Result<(), Self::Error> {
+        self.rng.fill_bytes(dst);
+        Ok(())
+    }
+}
+
 impl HpkeTestRng for HpkeLibcruxPrng {
     type Error = Error;
 
@@ -363,9 +385,7 @@ impl HpkeTestRng for HpkeLibcruxPrng {
 
     #[cfg(not(feature = "deterministic-prng"))]
     fn try_fill_test_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error> {
-        use hpke_rs_crypto::RngCore;
-
-        self.fill_bytes(dest);
+        self.rng.fill_bytes(dest);
         Ok(())
     }
 
