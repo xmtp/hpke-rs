@@ -348,9 +348,9 @@ impl hpke_rs_crypto::RngCore for HpkeLibcruxPrng {
 
 impl CryptoRng for HpkeLibcruxPrng {}
 
-// libcrux 0.0.9's KEM API takes `&mut impl rand::CryptoRng`, satisfied via the
-// `TryRng`/`TryCryptoRng` blanket impls; the `hpke_rs_crypto::RngCore` impls
-// above stay for the hpke-rs 0.6 trait bounds. Mirrors upstream hpke-rs 0.7.0.
+// libcrux 0.0.10 takes `rand::TryCryptoRng`. The seeded ChaCha20 generator
+// cannot fail. The `hpke_rs_crypto::RngCore` implementation above retains
+// the hpke-rs 0.6 trait bounds.
 impl TryCryptoRng for HpkeLibcruxPrng {}
 
 impl TryRng for HpkeLibcruxPrng {
