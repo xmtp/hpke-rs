@@ -13,7 +13,7 @@ repository = "https://github.com/cryspen/hpke-rs"
 hpke-rs-crypto = { version = "0.6.1", path = "../traits" }
 libcrux-ecdh = { version = "0.0.8", default-features = false }
 libcrux-hkdf = { version = "0.0.8" }
-libcrux-kem = { version = "0.0.9", default-features = false }
+libcrux-kem = { version = "0.0.10", default-features = false }
 libcrux-aead = { version = "0.0.9" }
 libcrux-traits = { version = "0.0.8", default-features = false }
 # Randomness
